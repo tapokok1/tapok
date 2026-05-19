@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TAPOK Space</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Базовые настройки */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Nunito', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            overflow: hidden; /* Скрываем скролл, так как у нас вкладки */
+            background: linear-gradient(135deg, #a1c4fd, #c2e9fb, #8fd3f4, #b4e0ff);
+            background-size: 400% 400%;
+            animation: gradientBG 10s ease infinite;
+            color: #333;
+        }
+
+        /* Переливающийся фон */
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Эффект легкого размытия на фоне */
+        .blur-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            backdrop-filter: blur(8px);
+            z-index: -1;
+        }
+
+        /* Экран загрузки */
+        #loader {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #8fd3f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease, visibility 0.8s;
+        }
+
+        .loader-text {
+            font-size: 3rem;
+            color: white;
+            font-weight: 900;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            animation: bounce 1s infinite alternate;
+        }
+
+        @keyframes bounce {
+            0% { transform: translateY(0) scale(1); }
+            100% { transform: translateY(-20px) scale(1.1); }
+        }
+
+        /* Основной контейнер контента */
+        .content-area {
+            position: relative;
+            height: calc(100vh - 80px); /* Минус высота нижнего меню */
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Вкладки */
+        .tab-content {
+            display: none;
+            width: 100%;
+            max-width: 500px;
+            animation: fadeIn 0.4s ease forwards;
+        }
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Главная карточка TAPOK (Стеклянный эффект) */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 30px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+        }
+
+        .glass-card h1 {
+            font-size: 4rem;
+            color: #0077b6;
+            text-shadow: 2px 2px 0px #fff;
+            margin-bottom: 10px;
+        }
+
+        .glass-card p {
+            font-size: 1.2rem;
+            color: #023e8a;
+            font-weight: 600;
+        }
+
+        /* Кнопки соцсетей */
+        .social-btn {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            background: white;
+            color: #0077b6;
+            text-decoration: none;
+            padding: 15px 20px;
+            margin: 10px 0;
+            border-radius: 20px;
+            font-size: 1.2rem;
+            font-weight: 800;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .social-btn i, .social-btn img {
+            font-size: 1.8rem;
+            margin-right: 15px;
+            width: 30px;
+            text-align: center;
+        }
+
+        .social-btn:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 20px rgba(0,119,182,0.2);
+            border: 2px solid #8fd3f4;
+        }
+
+        /* Специфичные цвета для соцсетей */
+        .btn-tg { color: #0088cc; }
+        .btn-tt { color: #000000; }
+        .btn-yt { color: #FF0000; }
+        .btn-ds { color: #5865F2; }
+        .btn-st { color: #171a21; }
+
+        /* Стена */
+        .wall-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .wall-messages {
+            flex-grow: 1;
+            background: rgba(255,255,255,0.5);
+            border-radius: 20px;
+            padding: 15px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            max-height: 50vh;
+        }
+
+        .message-box {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .wall-input-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        .wall-input-area input {
+            flex-grow: 1;
+            padding: 15px;
+            border-radius: 20px;
+            border: 2px solid white;
+            font-size: 1rem;
+            outline: none;
+            background: rgba(255,255,255,0.8);
+        }
+
+        .wall-input-area button {
+            background: #0077b6;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 0 20px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            font-weight: 800;
+            transition: 0.2s;
+        }
+
+        .wall-input-area button:hover {
+            background: #023e8a;
+            transform: scale(1.05);
+        }
+
+        /* Нижнее меню навигации */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; width: 100%;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top-left-radius: 30px;
+            border-top-right-radius: 30px;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #8fd3f4;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: 800;
+        }
+
+        .nav-item i {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            transition: 0.3s;
+        }
+
+        .nav-item.active {
+            color: #0077b6;
+            transform: translateY(-5px);
+        }
+
+        .nav-item.active i {
+            transform: scale(1.2);
+        }
+
+        /* Счетчик посетителей */
+        .visitor-counter {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            background: rgba(0, 119, 182, 0.8);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            backdrop-filter: blur(5px);
+            z-index: 90;
+        }
+
+        /* Стили для скроллбара на стене */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #8fd3f4; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <div id="loader">
+        <div class="loader-text">TAPOK...</div>
+    </div>
+
+    <div class="blur-bg"></div>
+
+    <div class="visitor-counter">
+        <i class="fa-solid fa-users"></i> Людей: <span id="count">0</span>
+    </div>
+
+    <div class="content-area">
+        
+        <div id="tab-home" class="tab-content active">
+            <div class="glass-card">
+                <h1>TAPOK</h1>
+                <p>Добро пожаловать в мой мир!</p>
+            </div>
+        </div>
+
+        <div id="tab-links" class="tab-content">
+            <div class="glass-card" style="padding: 20px;">
+                <a href="https://t.me/tapokok" target="_blank" class="social-btn btn-tg">
+                    <i class="fab fa-telegram"></i> Telegram
+                </a>
+                <a href="https://www.tiktok.com/@entoshe0" target="_blank" class="social-btn btn-tt">
+                    <i class="fab fa-tiktok"></i> TikTok
+                </a>
+                <a href="https://youtube.com/@tapokok_ok?si=We5MpRnCOL_FbpIV" target="_blank" class="social-btn btn-yt">
+                    <i class="fab fa-youtube"></i> YouTube
+                </a>
+                <div class="social-btn btn-ds" onclick="copyDiscord()">
+                    <i class="fab fa-discord"></i> <span id="ds-text">@tapokok</span>
+                </div>
+                <a href="https://steamcommunity.com/profiles/76561199667684645/" target="_blank" class="social-btn btn-st">
+                    <i class="fab fa-steam"></i> Steam
+                </a>
+                <a href="https://xn--d1ah4a.com/@tapok_itd" target="_blank" class="social-btn">
+                    <img src="itd.png" alt="ИТД" style="border-radius: 5px;"> итд.com
+                </a>
+            </div>
+        </div>
+
+        <div id="tab-wall" class="tab-content">
+            <div class="wall-container">
+                <div class="glass-card" style="padding: 20px; flex-grow: 1; display: flex; flex-direction: column;">
+                    <h2 style="color: #0077b6; margin-bottom: 10px;">Стена сообщений</h2>
+                    <div class="wall-messages" id="wallBoard">
+                        </div>
+                    <div class="wall-input-area">
+                        <input type="text" id="msgInput" placeholder="Напиши что-нибудь..." maxlength="50">
+                        <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('tab-home', this)">
+            <i class="fas fa-home"></i>
+            <span>Главная</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('tab-links', this)">
+            <i class="fas fa-link"></i>
+            <span>Ссылки</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('tab-wall', this)">
+            <i class="fas fa-comment-dots"></i>
+            <span>Стена</span>
+        </div>
+    </div>
+
+    <script>
+        // 1. Анимация загрузки
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const loader = document.getElementById('loader');
+                loader.style.opacity = '0';
+                setTimeout(() => loader.style.display = 'none', 800);
+            }, 1200); // 1.2 секунды красивой загрузки
+            
+            loadWallMessages();
+            updateCounter();
+        });
+
+        // 2. Переключение вкладок
+        function switchTab(tabId, element) {
+            // Убираем класс active у всех вкладок и кнопок
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+            
+            // Добавляем active выбранной вкладке
+            document.getElementById(tabId).classList.add('active');
+            element.classList.add('active');
+        }
+
+        // 3. Копирование Discord ника
+        function copyDiscord() {
+            navigator.clipboard.writeText("@tapokok").then(() => {
+                const dsText = document.getElementById('ds-text');
+                dsText.innerText = "Скопировано!";
+                setTimeout(() => dsText.innerText = "@tapokok", 2000);
+            });
+        }
+
+        // 4. Логика Стены (Используем LocalStorage для имитации)
+        function sendMessage() {
+            const input = document.getElementById('msgInput');
+            const text = input.value.trim();
+            if(text !== "") {
+                let messages = JSON.parse(localStorage.getItem('tapok_wall')) || [];
+                messages.push(text);
+                localStorage.setItem('tapok_wall', JSON.stringify(messages));
+                input.value = "";
+                loadWallMessages();
+            }
+        }
+
+        function loadWallMessages() {
+            const board = document.getElementById('wallBoard');
+            board.innerHTML = "";
+            let messages = JSON.parse(localStorage.getItem('tapok_wall')) || [
+                "Привет! Это первое сообщение на стене 🚀"
+            ];
+            
+            messages.forEach(msg => {
+                const div = document.createElement('div');
+                div.className = 'message-box';
+                div.innerText = msg;
+                board.appendChild(div);
+            });
+            // Прокрутка вниз
+            board.scrollTop = board.scrollHeight;
+        }
+
+        // 5. Имитация счетчика посетителей
+        function updateCounter() {
+            let count = localStorage.getItem('tapok_visits') || 142; // Стартуем с красивого числа
+            count = parseInt(count) + 1;
+            localStorage.setItem('tapok_visits', count);
+            document.getElementById('count').innerText = count;
+        }
+    </script>
+</body>
+</html>
